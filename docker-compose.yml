@@ -1,0 +1,40 @@
+version: "3.1"
+services:
+  mailhog:
+    image: "mailhog/mailhog:latest" # MailHog image for catching and viewing emails during development
+    ports:
+      - "53001:8025" # Exposes MailHog web interface on port 53001 of the host
+
+  redis:
+    image: "redis:alpine" # Lightweight Redis image based on Alpine Linux for caching and session storage
+
+  mysql:
+    image: "mariadb:10.0" # MariaDB image, an open-source relational database, version 10.0
+    working_dir: /application # Sets the working directory inside the container
+    volumes:
+      - ".:/application" # Mounts the current directory to /application inside the container
+    environment:
+      - MYSQL_ROOT_PASSWORD=root # Sets the root password for MySQL
+      - MYSQL_DATABASE=app # Creates a database named 'app'
+      - MYSQL_USER=user # Creates a database user named 'user'
+      # - MYSQL_PASSWORD=123456 # Sets the password for the 'user' database user (Remove this line)
+    ports:
+      - "53002:3306" # Exposes MySQL on port 53002 of the host
+
+  webserver:
+    image: "nginx:alpine" # Lightweight Nginx web server image based on Alpine Linux
+    working_dir: /application # Sets the working directory for the Nginx server
+    volumes:
+      - "./app:/application" # Mounts the current directory to /application inside the container
+      - "./phpdocker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf" # Custom Nginx configuration
+    ports:
+      - "53000:80" # Exposes Nginx on port 53000 of the host
+
+  php-fpm:
+    build: phpdocker/php-fpm # Specifies the directory containing the Dockerfile for building the PHP-FPM image
+    working_dir: /application # Sets the working directory for PHP-FPM
+    volumes:
+      - "./app:/application" # Mounts the current directory to /application inside the container
+      - "./phpdocker/php-fpm/php-ini-overrides.ini:/etc/php/8.2/fpm/conf.d/99-overrides.ini" # Overrides default PHP settings
+      # command: "composer install " # Runs Composer install when the container starts
+# Each service in your Docker Compose file is configured to perform a specific role in your development environment, such as web serving, database management, email catching for testing, caching, and session storage.
