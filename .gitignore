@@ -1,0 +1,10 @@
+# gitgnore
+#
+# # folder app
+/app
+
+# logs
+*.log 
+
+
+
